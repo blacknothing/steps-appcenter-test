@@ -49,13 +49,16 @@ inputs:
   opts:
     title: Test framework
     summary: The used testing framework name
-    description: The used testing framework name
-    value_options:
-    - appium
-    - calabash
-    - espresso
-    - xcuitest
-    - uitest
+    description: |-
+      The used testing framework name.
+
+      Available options:
+
+      - `appium` - for Appium tests
+      - `espresso` - for Espresso tests
+      - `calabash` - for Calabash tests
+      - `uitest` - for Xamarin.UITests
+      - `xcuitest` - for XCUITest
     is_expand: true
     is_required: true
 - devices:
@@ -103,8 +106,8 @@ inputs:
       Path to the test directory.
 
       - For Appium tests: path to the directory with the Appium tests (usually <project>/target/upload)
-      - For Calabash tests: path to the Calabash workspace directory (usually <project>/features)
       - For Espresso tests: path to the Espresso output directory (usually <project>/build/outputs/apk)
+      - For Calabash tests: path to the Calabash workspace directory (usually <project>/features)
       - For Xamarin.UITest tests: path to the directory with the built test assemblies (usually <project>/bin/<configuration>)
       - For XCUITest tests: path to the build output directory (usually <project>/Build/Products/Debug-iphoneos)
     is_expand: true
