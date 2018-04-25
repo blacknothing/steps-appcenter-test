@@ -1,0 +1,326 @@
+format_version: 5
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+app:
+  envs:
+  # Define it in .bitrise.secrets.yml
+  - API_TOKEN: $API_TOKEN
+  #
+  - BITRISE_STEP_VERSION: "0.9.0"
+  - ORIG_BITRISE_SOURCE_DIR: $BITRISE_SOURCE_DIR
+
+workflows:
+  test:
+    steps:
+    - go-list:
+    - golint:
+    - errcheck:
+    - go-test:
+    after_run:
+    - test_xamarin_uitest
+    - test_calabash
+    - test_ios
+    - test_android
+
+  test_android:
+    steps:
+    - script:
+        title: cleanup ./_tmp dir
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            rm -rf $ORIG_BITRISE_SOURCE_DIR/_tmp
+            mkdir $ORIG_BITRISE_SOURCE_DIR/_tmp
+    - change-workdir:
+        title: cd ./_tmp dir
+        inputs:
+        - path: $ORIG_BITRISE_SOURCE_DIR/_tmp
+        - is_create_path: true
+    - script:
+        title: git clone android-multiple-test-results-sample
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            git clone -b app-center https://github.com/bitrise-samples/android-multiple-test-results-sample.git .
+    - gradle-runner:
+        title: build android-multiple-test-results-sample
+        inputs:
+        - gradle_file: ./build.gradle
+        - gradle_task: :app:assembleDebug :app:assembleDebugAndroidTest
+        - gradlew_path: ./gradlew
+    - path::./:
+        title: step Test - Android Espresso
+        inputs:
+        - token: $API_TOKEN
+        - app: app-center-bot/Multiplatform-Android-1
+        - framework: espresso
+        - devices: cdf43495
+        - series: master
+        - locale: en_US
+        - app_path: $BITRISE_APK_PATH
+        - test_dir: ./app/build/outputs/apk/androidTest/debug
+
+  test_ios:
+    steps:
+    - script:
+        title: cleanup ./_tmp dir
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            rm -rf $ORIG_BITRISE_SOURCE_DIR/_tmp
+            mkdir $ORIG_BITRISE_SOURCE_DIR/_tmp
+    - change-workdir:
+        title: cd ./_tmp dir
+        inputs:
+        - path: $ORIG_BITRISE_SOURCE_DIR/_tmp
+        - is_create_path: true
+    - script:
+        title: git clone sample-apps-ios-simple-objc-with-uitest
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            git clone -b app-center https://github.com/bitrise-samples/sample-apps-ios-simple-objc-with-uitest.git .
+    - xcode-archive:
+        title: build sample-apps-ios-simple-objc-with-uitest
+        inputs:
+        - project_path: ./ios-simple-objc/ios-simple-objc.xcworkspace
+        - scheme: ios-simple-objc
+        - export_method: development
+    - script:
+        title: build test sample-apps-ios-simple-objc-with-uitest
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -ex
+            tmp_dir=$(mktemp -d)
+            xcrun xcodebuild build-for-testing \
+                -configuration Debug \
+                -workspace ./ios-simple-objc/ios-simple-objc.xcworkspace \
+                -sdk iphoneos \
+                -scheme ios-simple-objc \
+                -derivedDataPath $tmp_dir
+
+            envman add --key TEST_DIR --value "$tmp_dir/Build/Products/Debug-iphoneos"
+    - path::./:
+        title: Step Test - iOS XCUItest
+        inputs:
+        - token: $API_TOKEN
+        - app: app-center-bot/Multiplatform-iOS
+        - framework: xcuitest
+        - devices: d96fcd69
+        - series: master
+        - locale: en_US
+        - app_path: $BITRISE_IPA_PATH
+        - test_dir: $TEST_DIR
+
+  test_calabash:
+    steps:
+    - script:
+        title: cleanup ./_tmp dir
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            rm -rf $ORIG_BITRISE_SOURCE_DIR/_tmp
+            mkdir $ORIG_BITRISE_SOURCE_DIR/_tmp
+    - change-workdir:
+        title: cd ./_tmp dir
+        inputs:
+        - path: $ORIG_BITRISE_SOURCE_DIR/_tmp
+        - is_create_path: true
+    - script:
+        title: git clone sample-apps-xamarin-cross-platform
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            git clone -b app-center https://github.com/bitrise-samples/sample-apps-xamarin-cross-platform.git .
+    - nuget-restore:
+        title: nuget restore
+        inputs:
+        - xamarin_solution: ./Multiplatform.sln
+    - xamarin-archive:
+        title: build sample-apps-xamarin-cross-platform
+        inputs:
+        - xamarin_solution: ./Multiplatform.sln
+        - xamarin_configuration: calabash
+        - xamarin_platform: Any CPU
+    - script:
+        title: build test sample-apps-xamarin-cross-platform
+        inputs:
+        - working_dir: $ORIG_BITRISE_SOURCE_DIR/_tmp/Droid
+        - content: |-
+            #!/bin/env bash
+            set -ex
+            # Resign apk with debug.keystore...
+            bundle install
+            # $HOME/.android/debug.keystore
+            # ./debug.keystore
+            # $HOME/.local/share/Xamarin/Mono for Android/debug.keystore
+            # $HOME/AppData/Local/Xamarin/Mono for Android/debug.keystore
+            if [[ ! -f "./debug.keystore" ]] ; then
+                keytool -genkey -v -keystore ""./debug.keystore"" -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+            fi
+            bundle exec calabash-android resign $BITRISE_APK_PATH -v
+            bundle exec calabash-android build $BITRISE_APK_PATH -v
+    - path::./:
+        title: step Test - Xamarin Android Calabash
+        inputs:
+        - token: $API_TOKEN
+        - app: app-center-bot/Multiplatform-Android-1
+        - framework: calabash
+        - devices: de2bf7dc
+        - series: master
+        - locale: en_US
+        - app_path: $BITRISE_APK_PATH
+        - test_dir: ./Droid/features
+    - change-workdir:
+        title: cd ./..
+        inputs:
+        - path: $ORIG_BITRISE_SOURCE_DIR/_tmp/
+        - is_create_path: true
+    - xamarin-archive:
+        title: build sample-apps-xamarin-cross-platform
+        inputs:
+        - xamarin_solution: ./Multiplatform.sln
+        - xamarin_configuration: Debug
+        - xamarin_platform: iPhone
+    - path::./:
+        title: step Test - Xamarin iOS Calabash
+        inputs:
+        - token: $API_TOKEN
+        - app: app-center-bot/Multiplatform-iOS
+        - framework: calabash
+        - devices: a5971a47
+        - series: master
+        - locale: en_US
+        - app_path: $BITRISE_IPA_PATH
+        - test_dir: ./iOS/features
+
+  test_xamarin_uitest:
+    envs:
+    - BITRISE_APP_CENTER_ID: 82b20b7c-7bee-49f6-b85b-8363fdc30b26
+    steps:
+    - script:
+        title: cleanup ./_tmp dir
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            rm -rf $ORIG_BITRISE_SOURCE_DIR/_tmp
+            mkdir $ORIG_BITRISE_SOURCE_DIR/_tmp
+    - change-workdir:
+        title: cd ./_tmp dir
+        inputs:
+        - path: $ORIG_BITRISE_SOURCE_DIR/_tmp
+        - is_create_path: true
+    - script:
+        title: git clone sample-apps-xamarin-cross-platform
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            git clone -b app-center https://github.com/bitrise-samples/sample-apps-xamarin-cross-platform.git .
+    - certificate-and-profile-installer:
+        title: install codesigning files
+    - nuget-restore:
+        title: nuget restore
+        inputs:
+        - xamarin_solution: ./Multiplatform.sln
+    - xamarin-archive:
+        title: build sample-apps-xamarin-cross-platform
+        inputs:
+        - xamarin_solution: ./Multiplatform.sln
+        - xamarin_configuration: Debug
+        - xamarin_platform: iPhone
+    - path::./:
+        title: step test - Xamarin iOS Xamarin.UITest
+        inputs:
+        - token: $API_TOKEN
+        - app: app-center-bot/Multiplatform-iOS
+        - framework: uitest
+        - devices: 889ccb19
+        - series: master
+        - locale: en_US
+        - app_path: $BITRISE_IPA_PATH
+        - test_dir: ./Multiplatform.UItest/bin/Debug
+    - script:
+        title: set Android project App Center ID
+        inputs:
+        - content: envman add --key BITRISE_APP_CENTER_ID --value "7f71136d-74d7-44ac-91a8-0263c30e4070"
+    - xamarin-archive:
+        title: build sample-apps-xamarin-cross-platform
+        inputs:
+        - xamarin_solution: ./Multiplatform.sln
+        - xamarin_configuration: Release
+        - xamarin_platform: "Any CPU"
+    - path::./:
+        title: step test - Xamarin Android Xamarin.UITest
+        inputs:
+        - token: $API_TOKEN
+        - app: app-center-bot/Multiplatform-Android-1
+        - framework: uitest
+        - devices: dc5d03f9
+        - series: master
+        - locale: en_US
+        - app_path: $BITRISE_APK_PATH
+        - test_dir: ./Multiplatform.UItest/bin/Release
+
+  dep-update:
+    steps:
+    - script:
+        title: Dependency update
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            go get -u -v github.com/golang/dep/cmd/dep
+            dep ensure -v
+            dep ensure -v -update
+
+  # ----------------------------------------------------------------
+  # --- workflows to Share this step into a Step Library
+  audit-this-step:
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            stepman audit --step-yml ./step.yml
+
+  share-this-step:
+    envs:
+      # if you want to share this step into a StepLib
+      - MY_STEPLIB_REPO_FORK_GIT_URL: $MY_STEPLIB_REPO_FORK_GIT_URL
+      - BITRISE_STEP_VERSION: $BITRISE_STEP_VERSION
+      - BITRISE_STEP_ID: appcenter-test
+      - BITRISE_STEP_GIT_CLONE_URL: https://github.com/bitrise-steplib/steps-appcenter-test.git
+    description: |-
+      If this is the first time you try to share a Step you should
+      first call: $ bitrise share
+
+      This will print you a guide, and information about how Step sharing
+      works. Please read it at least once!
+
+      As noted in the Step sharing guide you'll have to fork the
+      StepLib you want to share this step into. Once you're done with forking
+      the repository you should set your own fork's git clone URL
+      in the `.bitrise.secrets.yml` file, or here in the `envs` section,
+      as the value of the `MY_STEPLIB_REPO_FORK_GIT_URL` environment.
+
+      You're now ready to share this Step, just make sure that
+      the `BITRISE_STEP_ID` and `BITRISE_STEP_VERSION`
+      environments are set to the desired values!
+
+      To share this Step into a StepLib you can just run: $ bitrise run share-this-step
+
+      Once it finishes the only thing left is to actually create a Pull Request,
+      the way described in the guide printed at the end of the process.
+    before_run:
+    - audit-this-step
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            bitrise share start -c "${MY_STEPLIB_REPO_FORK_GIT_URL}"
+            bitrise share create --stepid "${BITRISE_STEP_ID}" --tag "${BITRISE_STEP_VERSION}" --git "${BITRISE_STEP_GIT_CLONE_URL}"
+            bitrise share finish

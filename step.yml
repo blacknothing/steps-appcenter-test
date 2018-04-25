@@ -1,0 +1,111 @@
+title: App Center upload and schedule tests
+summary: Uploads and schedules tests on Microsoft App Center
+description: |-
+  Uploads and schedules tests on Microsoft App Center.
+
+  Appium, Espresso, Calabash Xamarin.UITest and XCUITest tests can be uploaded.
+
+  Setup Instructions:
+
+  1, Prepare your test for upload: https://docs.microsoft.com/en-us/appcenter/test-cloud/preparing-for-upload/
+  1, Create an App Center project: https://appcenter.ms/apps
+  1, Navigate to Test runs tab and start a New test run:
+    - Select devices
+    - Configure test run
+    - On Submit tab you will find every required input for the step
+    - Click on Done
+website: https://github.com/bitrise-steplib/steps-appcenter-test
+source_code_url: https://github.com/bitrise-steplib/steps-appcenter-test
+support_url: https://github.com/bitrise-steplib/steps-appcenter-test/issues
+
+type_tags:
+- test
+
+is_requires_admin_user: true
+is_always_run: false
+is_skippable: false
+run_if: ""
+
+toolkit:
+  go:
+    package_name: github.com/bitrise-steplib/steps-appcenter-test
+
+inputs:
+- token: 
+  opts:
+    title: API token
+    summary: API token
+    description: "[Install the appcenter-cli](https://github.com/Microsoft/appcenter-cli#installation) and run `appcenter tokens create` to generate a new API token."
+    is_expand: true
+    is_required: true
+- app:
+  opts:
+    title: Target App on App Center
+    summary: Specify app in the <ownerName>/<appName> format
+    description: Specify app in the <ownerName>/<appName> format
+    is_expand: true
+    is_required: true
+- framework:
+  opts:
+    title: Test framework
+    summary: The used testing framework name
+    description: The used testing framework name
+    value_options:
+    - appium
+    - calabash
+    - espresso
+    - xcuitest
+    - uitest
+    is_expand: true
+    is_required: true
+- devices:
+  opts:
+    title: Device selection slug
+    summary: Device selection slug
+    description: Device selection slug
+    is_expand: true
+    is_required: true
+- series:
+  opts:
+    title: Name of the test series
+    summary: Name of the test series
+    description: Name of the test series.
+    is_expand: true
+    is_required: true
+- locale: en_US
+  opts:
+    title: The system locale for the test run
+    summary: The system locale for the test run
+    description: The system locale for the test run.
+    is_expand: true
+    is_required: true
+- app_path:
+  opts:
+    title: Path to an application file
+    summary: Path to an application file
+    description: |-
+      Path to an application file.
+      Can be an .ipa or .apk file.
+    is_expand: true
+    is_required: true
+- dsym_dir:
+  opts:
+    title: Path to the directory with iOS symbol files
+    summary: Path to the directory with iOS symbol files
+    description: |-
+      Path to the directory with iOS symbol files.
+    is_expand: true
+- test_dir: 
+  opts:
+    title: Path to the test directory
+    summary: Path to the test directory
+    description: |-
+      Path to the test directory.
+
+      - For Appium tests: path to the directory with the Appium tests (usually <project>/target/upload)
+      - For Calabash tests: path to the Calabash workspace directory (usually <project>/features)
+      - For Espresso tests: path to the Espresso output directory (usually <project>/build/outputs/apk)
+      - For Xamarin.UITest tests: path to the directory with the built test assemblies (usually <project>/bin/<configuration>)
+      - For XCUITest tests: path to the build output directory (usually <project>/Build/Products/Debug-iphoneos)
+    is_expand: true
+    is_required: true
