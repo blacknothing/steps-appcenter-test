@@ -7,9 +7,9 @@ description: |-
 
   Setup Instructions:
 
-  1, Prepare your test for upload: https://docs.microsoft.com/en-us/appcenter/test-cloud/preparing-for-upload/
-  1, Create an App Center project: https://appcenter.ms/apps
-  1, Navigate to Test runs tab and start a New test run:
+  1. Prepare your test for upload: [https://docs.microsoft.com/en-us/appcenter/test-cloud/preparing-for-upload/](https://docs.microsoft.com/en-us/appcenter/test-cloud/preparing-for-upload/)
+  1. Create an App Center project: [https://appcenter.ms/apps](https://appcenter.ms/apps)
+  1. Navigate to Test runs tab and start a New test run:
     - Select devices
     - Configure test run
     - On Submit tab you will find every required input for the step
