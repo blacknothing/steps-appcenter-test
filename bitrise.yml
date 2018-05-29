@@ -52,9 +52,9 @@ workflows:
         title: step Test - Android Espresso
         inputs:
         - token: $API_TOKEN
-        - app: app-center-bot/Multiplatform-Android-1
+        - app: bot.dev.port/Multiplatform-Android
         - framework: espresso
-        - devices: cdf43495
+        - devices: e815328f
         - series: master
         - locale: en_US
         - app_path: $BITRISE_APK_PATH
@@ -105,9 +105,9 @@ workflows:
         title: Step Test - iOS XCUItest
         inputs:
         - token: $API_TOKEN
-        - app: app-center-bot/Multiplatform-iOS
+        - app: bot.dev.port/Multiplatform-iOS
         - framework: xcuitest
-        - devices: d96fcd69
+        - devices: 96162a33
         - series: master
         - locale: en_US
         - app_path: $BITRISE_IPA_PATH
@@ -165,9 +165,9 @@ workflows:
         title: step Test - Xamarin Android Calabash
         inputs:
         - token: $API_TOKEN
-        - app: app-center-bot/Multiplatform-Android-1
+        - app: bot.dev.port/Multiplatform-Android
         - framework: calabash
-        - devices: de2bf7dc
+        - devices: 72656484
         - series: master
         - locale: en_US
         - app_path: $BITRISE_APK_PATH
@@ -187,9 +187,9 @@ workflows:
         title: step Test - Xamarin iOS Calabash
         inputs:
         - token: $API_TOKEN
-        - app: app-center-bot/Multiplatform-iOS
+        - app: bot.dev.port/Multiplatform-iOS
         - framework: calabash
-        - devices: a5971a47
+        - devices: 068f88f4
         - series: master
         - locale: en_US
         - app_path: $BITRISE_IPA_PATH
@@ -233,9 +233,9 @@ workflows:
         title: step test - Xamarin iOS Xamarin.UITest
         inputs:
         - token: $API_TOKEN
-        - app: app-center-bot/Multiplatform-iOS
+        - app: bot.dev.port/Multiplatform-iOS
         - framework: uitest
-        - devices: 889ccb19
+        - devices: dc6f9bc0
         - series: master
         - locale: en_US
         - app_path: $BITRISE_IPA_PATH
@@ -254,9 +254,9 @@ workflows:
         title: step test - Xamarin Android Xamarin.UITest
         inputs:
         - token: $API_TOKEN
-        - app: app-center-bot/Multiplatform-Android-1
+        - app: bot.dev.port/Multiplatform-Android
         - framework: uitest
-        - devices: dc5d03f9
+        - devices: 4f15994c
         - series: master
         - locale: en_US
         - app_path: $BITRISE_APK_PATH
