@@ -276,6 +276,20 @@ workflows:
             dep ensure -v -update
 
   # ----------------------------------------------------------------
+  # --- workflows to create Release
+  create-release:
+    steps:
+    - script:
+        title:
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            go get -u github.com/bitrise-tools/releaseman
+            export CI=true
+            releaseman create --version $BITRISE_STEP_VERSION
+
+  # ----------------------------------------------------------------
   # --- workflows to Share this step into a Step Library
   audit-this-step:
     steps:
