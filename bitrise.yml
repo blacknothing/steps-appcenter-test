@@ -240,6 +240,7 @@ workflows:
         - locale: en_US
         - app_path: $BITRISE_IPA_PATH
         - test_dir: ./Multiplatform.UItest/bin/Debug
+        - additional_options: --debug
     - script:
         title: set Android project App Center ID
         inputs:
