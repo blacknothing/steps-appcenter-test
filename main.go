@@ -8,6 +8,7 @@ import (
 	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-tools/go-steputils/stepconf"
+	"github.com/kballard/go-shellquote"
 )
 
 // Configs ...
@@ -21,9 +22,10 @@ type Configs struct {
 	AppPath       string `env:"app_path,file"`
 	DSYMDir       string `env:"dsym_dir"`
 	TestDir       string `env:"test_dir,dir"`
+	Options       string `env:"additional_options"`
 }
 
-func uploadTestCommand(apiToken, framework, app, devices, series, local, appPath, dsymDir, testDir string) *command.Model {
+func uploadTestCommand(apiToken, framework, app, devices, series, local, appPath, dsymDir, testDir, options string) (cmd *command.Model, err error) {
 	args := []string{"test", "run", string(framework),
 		"--token", apiToken,
 		"--app", app,
@@ -41,7 +43,17 @@ func uploadTestCommand(apiToken, framework, app, devices, series, local, appPath
 	} else {
 		args = append(args, "--build-dir", testDir)
 	}
-	return command.New("appcenter", args...)
+	if options != "" {
+		optionSlice, err := shellquote.Split(options)
+		if err != nil {
+			return nil, err
+		}
+		
+		args = append(args, optionSlice...)
+	}
+	cmd = command.New("appcenter", args...)
+
+	return
 }
 
 func mainE() error {
@@ -62,7 +74,12 @@ func mainE() error {
 		}
 	}
 
-	cmd := uploadTestCommand(cfg.Token, cfg.TestFramework, cfg.App, cfg.Devices, cfg.Series, cfg.Locale, cfg.AppPath, cfg.DSYMDir, cfg.TestDir).SetStdout(os.Stdout).SetStderr(os.Stderr)
+	cmd, err := uploadTestCommand(cfg.Token, cfg.TestFramework, cfg.App, cfg.Devices, cfg.Series, cfg.Locale, cfg.AppPath, cfg.DSYMDir, cfg.TestDir, cfg.Options)
+	if err != nil {
+		return fmt.Errorf("Failed to create upload command: %s", err)
+	}
+
+	cmd = cmd.SetStdout(os.Stdout).SetStderr(os.Stderr)
 
 	log.Infof("\nUploading and scheduling tests")
 	log.Donef("$ %s", cmd.PrintableCommandArgs())

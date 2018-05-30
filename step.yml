@@ -112,3 +112,14 @@ inputs:
       - For XCUITest tests: path to the build output directory (usually <project>/Build/Products/Debug-iphoneos)
     is_expand: true
     is_required: true
+- additional_options:
+  opts:
+    title: Additional options for test run
+    summary: Additional options for test run
+    description: |-
+      Options added to the end of the test run.
+
+      You can use multiple options, separated by a space
+      character. Example `--include-category A|B|C --exclude-cataegory D`
+    is_expand: true
+    is_required: false
