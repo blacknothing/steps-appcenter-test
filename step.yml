@@ -31,13 +31,14 @@ toolkit:
     package_name: github.com/bitrise-steplib/steps-appcenter-test
 
 inputs:
-- token: 
+- token:
   opts:
     title: API token
     summary: API token
     description: "[Install the appcenter-cli](https://github.com/Microsoft/appcenter-cli#installation) and run `appcenter tokens create` to generate a new API token."
     is_expand: true
     is_required: true
+    is_sensitive: true
 - app:
   opts:
     title: Target App on App Center
