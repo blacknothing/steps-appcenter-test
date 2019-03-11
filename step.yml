@@ -113,6 +113,17 @@ inputs:
       - For XCUITest tests: path to the build output directory (usually <project>/Build/Products/Debug-iphoneos)
     is_expand: true
     is_required: true
+- async: 
+    opts:
+      title: "Run asynchronously"
+      summary: Should the step run asynchronously or wait for the tests to complete.
+      description: |
+        Boolean variable indicating if the step should run asynchronously or wait for the tests to complete.
+      is_expand: true
+      is_required: false
+      value_options:
+        - "true"
+        - "false"    
 - additional_options:
   opts:
     title: Additional options for test run

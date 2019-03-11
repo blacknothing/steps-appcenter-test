@@ -22,19 +22,20 @@ type Configs struct {
 	AppPath       string `env:"app_path,file"`
 	DSYMDir       string `env:"dsym_dir"`
 	TestDir       string `env:"test_dir,dir"`
+	Async         string `env:"async"`
 	Options       string `env:"additional_options"`
 }
 
-func uploadTestCommand(apiToken, framework, app, devices, series, local, appPath, dsymDir, testDir, options string) (cmd *command.Model, err error) {
+func uploadTestCommand(apiToken, framework, app, devices, series, local, appPath, dsymDir, testDir, async, options string) (cmd *command.Model, err error) {
 	args := []string{"test", "run", string(framework),
 		"--token", apiToken,
 		"--app", app,
 		"--devices", devices,
 		"--test-series", series,
 		"--locale", local,
-		"--async",
 		"--app-path", appPath,
 	}
+
 	if dsymDir != "" {
 		args = append(args, "--dsym-dir", dsymDir)
 	}
@@ -43,12 +44,15 @@ func uploadTestCommand(apiToken, framework, app, devices, series, local, appPath
 	} else {
 		args = append(args, "--build-dir", testDir)
 	}
+	if async != "false" {
+		args = append(args, "--async")
+	}
 	if options != "" {
 		optionSlice, err := shellquote.Split(options)
 		if err != nil {
 			return nil, err
 		}
-		
+
 		args = append(args, optionSlice...)
 	}
 	cmd = command.New("appcenter", args...)
