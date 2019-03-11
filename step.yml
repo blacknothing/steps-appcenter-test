@@ -28,7 +28,7 @@ run_if: ""
 
 toolkit:
   go:
-    package_name: github.com/bitrise-steplib/steps-appcenter-test
+    package_name: github.com/blacknothing/steps-appcenter-test
 
 inputs:
 - token:
