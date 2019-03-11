@@ -78,7 +78,7 @@ func mainE() error {
 		}
 	}
 
-	cmd, err := uploadTestCommand(cfg.Token, cfg.TestFramework, cfg.App, cfg.Devices, cfg.Series, cfg.Locale, cfg.AppPath, cfg.DSYMDir, cfg.TestDir, cfg.Options)
+	cmd, err := uploadTestCommand(cfg.Token, cfg.TestFramework, cfg.App, cfg.Devices, cfg.Series, cfg.Locale, cfg.AppPath, cfg.DSYMDir, cfg.TestDir, cfg.Async, cfg.Options)
 	if err != nil {
 		return fmt.Errorf("Failed to create upload command: %s", err)
 	}
